@@ -326,19 +326,22 @@ public class Questao extends QuestaoConector
 		// }
 
 		// INSTRUÇÃO PARA CARREGAR O SPINNER
-		temas = new ArrayList<String>();
-		conectorAuxiliar = new ArrayList<Integer>();
-		// temas.add("TODOS OS TEMAS");
+		
+		carregarTemas();
+		
+		//temas = new ArrayList<String>();
+		//conectorAuxiliar = new ArrayList<Integer>();
+		//// temas.add("TODOS OS TEMAS");
 
-		// enderecoDaQuestao = new ArrayList<Integer>();
-		Temas t;
+		//// enderecoDaQuestao = new ArrayList<Integer>();
+		//Temas t;
 
-		if (ar != null) {
-			t = nf.filtrarTemas(ar);
-			temas.addAll(t.getAr());
-			conectorAuxiliar = t.getRefNumber();
-		}
-		temas.add("TODOS OS TEMAS");
+		//if (ar != null) {
+		//	t = nf.filtrarTemas(ar);
+		//	temas.addAll(t.getAr());
+		//	conectorAuxiliar = t.getRefNumber();
+		//}
+		//temas.add("TODOS OS TEMAS");
 
 		// for(int i=0;i<get_QtdeDeQuestoes();i++){ //esse laço permite
 		// percorrer por todas as questões
@@ -734,25 +737,9 @@ public class Questao extends QuestaoConector
 				try {
 					InputStream is = new FileInputStream(FilePath);
 					try {
-						ar = fo.realizarLeituraDaQuestao(is); // RECEBE O
-																// ARRAYLIST DA
-																// FUNÇÃO
-
-						fo.filtrarTemas(ar); // INSERE OS TEMAS NA VARIÁVEL
-												// temas e os números
-												// representativos na variável
-												// conectorAuxiliar
-												// Nesse caso eu preferi
-												// utilizar variáveis globais,
-												// porque o método deveria
-												// retornar um ArrayList e um
-												// int,
-												// mas em java isso não é
-												// permitido. Uma solução viável
-												// seria criar uma classe com um
-												// arraylist e um int, mas
-												// preferi
-												// evitar a fatiga.
+						ar = fo.realizarLeituraDaQuestao(is); // RECEBE O ARRAYLIST DA FUNÇÃO
+						temas.clear();
+						carregarTemas();
 
 						resp = carregarQuestao(0); // CARREGA QUESTÃO NA TELA
 					} catch (IOException e) {
@@ -769,6 +756,24 @@ public class Questao extends QuestaoConector
 
 		}
 
+	}
+	
+	public void carregarTemas(){
+		// INSTRUÇÃO PARA CARREGAR O SPINNER
+		Novas_Funcionalidades nf = new Novas_Funcionalidades();
+		temas = new ArrayList<String>();
+		conectorAuxiliar = new ArrayList<Integer>();
+				// temas.add("TODOS OS TEMAS");
+
+				// enderecoDaQuestao = new ArrayList<Integer>();
+		Temas t;
+
+		if (ar != null) {
+			t = nf.filtrarTemas(ar);
+			temas.addAll(t.getAr());
+			conectorAuxiliar = t.getRefNumber();
+		}
+		temas.add("TODOS OS TEMAS");
 	}
 
 }
