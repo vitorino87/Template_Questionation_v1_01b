@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	android:fillViewport="true"
+    	android:id="@+id/scrollView"
+    	>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="490dp" 
+        >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="false"
+            android:layout_below="@+id/editText1"
+            android:gravity="center"
+            android:minHeight="45dp"
+            android:minWidth="300dp"
+            android:text="" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textView1" >
+
+            <RadioButton
+                android:id="@+id/radio0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="" />
+
+            <RadioButton
+                android:id="@+id/radio1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="" />
+
+            <RadioButton
+                android:id="@+id/radio2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="" />
+
+            <RadioButton
+                android:id="@+id/radio3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="" />
+
+            <RadioButton
+                android:id="@+id/radio4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="" />
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/editText1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:ems="10"
+            android:inputType="number" >
+
+            <requestFocus
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </EditText>
+
+        <Button
+            android:id="@+id/btnBuscar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/editText1"
+            android:text="Buscar" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/radioGroup1"
+            android:gravity="center"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btnSortear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Abrir..." 
+                />
+
+            <Button
+                android:id="@+id/btnChecar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Checar" />
+            
+            <Button
+                android:id="@+id/btnTema"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tema" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/linearLayout1"
+            android:gravity="center"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btnAnterior"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Anterior" />
+
+            <Button
+                android:id="@+id/btnRandomizar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Randomizar" />
+
+            <Button
+                android:id="@+id/btnProximo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Próximo" />
+        </LinearLayout>
+        
+        <LinearLayout
+            android:id="@+id/linearlayout3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/linearLayout2"
+            android:gravity="center"
+            android:orientation="horizontal" >
+            
+            <Spinner
+                android:id="@+id/escolhedor"
+                android:layout_width="wrap_content"
+                android:layout_height="64dp" />
+    
+        </LinearLayout>
+
+        
+
+    </RelativeLayout>
+    
+</ScrollView>
+
