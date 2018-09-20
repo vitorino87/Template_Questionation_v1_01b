@@ -739,8 +739,12 @@ public class Questao extends QuestaoConector
 					try {
 						ar = fo.realizarLeituraDaQuestao(is); // RECEBE O ARRAYLIST DA FUNÇÃO
 						temas.clear();
-						carregarTemas();
-
+						Temas tm = carregarTemas2(ar);
+						temas = tm.getAr();
+						//temas = carregarTemas2(ar).getAr();
+						conectorAuxiliar = tm.getRefNumber(); 
+						temas.add("TODOS OS TEMAS");
+						alimentarSpinner();
 						resp = carregarQuestao(0); // CARREGA QUESTÃO NA TELA
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -775,6 +779,30 @@ public class Questao extends QuestaoConector
 		}
 		temas.add("TODOS OS TEMAS");
 	}
+	
+	public Temas carregarTemas2(ArrayList<String> as){
+		Novas_Funcionalidades nf = new Novas_Funcionalidades();
+		//ArrayList<String> al = new ArrayList<String>();
+		Temas te = new Temas();
+		if(as!=null){
+			te = nf.filtrarTemas(as);
+		}
+		return te;
+	}
+	
+	public void alimentarSpinner(){
+		// Creating adapter for spinner
+				ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line,
+						temas);
+
+				// Drop down layout style - list view with radio button
+				dataAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+
+				// attaching data adapter to spinner
+				btnSpinner.setAdapter(dataAdapter);
+				btnSpinner.setSelection(temas.size() - 1);
+	}
+	
 
 }
 
