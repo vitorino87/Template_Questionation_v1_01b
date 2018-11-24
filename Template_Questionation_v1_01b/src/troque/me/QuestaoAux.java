@@ -55,22 +55,26 @@ public class QuestaoAux {
 		 * @param rd objeto rádio
 		 * @param Tela classe
 		 */
-		public static void checked(int c, RadioButton[] rd, Context Tela, List<Integer> l)
+		public static boolean checked(int c, RadioButton[] rd, Context Tela, List<Integer> l)
 		{
+			boolean gab = false;
 			for(int i=0;i<5;i++)
 			{
 				if(rd[i].isChecked())
 				{					
 					if(l.get(i)==c)
 					{
-						Toast.makeText(Tela, "Correto! Resp.: "+rd[i].getText(), Toast.LENGTH_SHORT).show();						
+						Toast.makeText(Tela, "Correto! Resp.: "+rd[i].getText(), Toast.LENGTH_SHORT).show();
+						gab = true;
 					}
 					else
 					{
 						Toast.makeText(Tela, "Errado!", Toast.LENGTH_SHORT).show();
+						gab= false;
 					}
 					break;
 				}
 			}
+			return gab;
 		}		
 }

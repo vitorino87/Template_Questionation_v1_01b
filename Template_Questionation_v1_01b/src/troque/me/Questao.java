@@ -12,9 +12,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
@@ -27,6 +31,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -39,6 +44,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 
 import android.graphics.Color;
+import android.net.Uri;
 
 ///////////////////////////////////////// INÍCIO DA CLASSE ///////////////////////////////////////////////////////////////////////////////////////////////////	
 
@@ -57,12 +63,13 @@ public class Questao extends QuestaoConector
 	// Variáveis para tratar com os objetos da tela2
 	TextView tv;
 	RadioButton[] rd = new RadioButton[5];
-	Button btnRandom, btnChecar, btnBuscar, btnAnterior, btnProximo, btnSortear, btnTema;
+	Button btnQuestoesErradas, btnChecar, btnBuscar, btnAnterior, btnProximo, btnSortear, btnTema;
 	EditText txtBuscar;
 	Spinner btnSpinner;
+	ImageView imageView;
 
 	// variáveis para impedir que o random repita números
-	private int f = 0;
+	//private int f = 0;
 
 	// variável global para auxiliar contagem das questões temáticas
 	private int auxiliarTema = 0;
@@ -89,6 +96,21 @@ public class Questao extends QuestaoConector
 	ArrayList<String> ar;
 	int resp = -1;
 
+	// variável para manter o path do arquivo
+	String pathFile = "";
+		
+	//variável para trabalhar com as questões erradas
+	List<Integer> questoesErradas;
+		
+	//variável global para trabalhar como index com as questoes erradas
+	int indexQuestoesErradas=0;
+			
+	//variável global temporária para armazenar z
+	int zTemp;
+		
+	//variavel global para verificar se o botão sim/não do dialog questoes erradas foi clicado 
+	boolean zQuestaoErradas = false;
+	
 	///////////////////////////////// FIM DAS VARIÁVEIS PÚBLICAS
 	///////////////////////////////// /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,7 +131,7 @@ public class Questao extends QuestaoConector
 		rd[2] = (RadioButton) findViewById(R.id.radio2);
 		rd[3] = (RadioButton) findViewById(R.id.radio3);
 		rd[4] = (RadioButton) findViewById(R.id.radio4);
-		btnRandom = (Button) findViewById(R.id.btnRandomizar);
+		btnQuestoesErradas = (Button) findViewById(R.id.btnRandomizar);
 		btnChecar = (Button) findViewById(R.id.btnChecar);
 		btnBuscar = (Button) findViewById(R.id.btnBuscar);
 		btnAnterior = (Button) findViewById(R.id.btnAnterior);
@@ -120,6 +142,8 @@ public class Questao extends QuestaoConector
 		btnTema = (Button) findViewById(R.id.btnTema);
 		questoesTematicas = new ArrayList<Integer>();
 		sv = (ScrollView) findViewById(R.id.scrollView);
+		imageView = (ImageView) findViewById(R.id.imageView1);
+		questoesErradas = new ArrayList<Integer>();
 
 		// chamando o método que muda as cores
 		mudarACorDosLayouts();
@@ -154,6 +178,18 @@ public class Questao extends QuestaoConector
 				}
 			});
 		}
+		
+		imageView.setOnTouchListener(new OnTouchListener() {
+			
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				gestureDetector.onTouchEvent(event);
+				return false;
+			}
+		});
+		
+		
 
 		// método para trabalhar com o Abrir...
 		btnSortear.setOnClickListener(new View.OnClickListener() {
@@ -188,7 +224,7 @@ public class Questao extends QuestaoConector
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				if (resp != -1) {
-					QuestaoAux.checked(resp, rd, Questao.this, auxiliarEmbaralharAlternativas);
+					salvarOuRemoverResposta(QuestaoAux.checked(resp, rd, Questao.this, auxiliarEmbaralharAlternativas));
 				} else {
 					Toast.makeText(Questao.this, "Escolha uma alternativa", Toast.LENGTH_SHORT);
 				}
@@ -240,6 +276,8 @@ public class Questao extends QuestaoConector
 				if (z < aux) {
 					try {
 						resp = carregarQuestao(++z);
+						if(verificarFimDeTema(ar,z,questoesErradas))
+							carregarDialogQuestoesErradas();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -249,22 +287,30 @@ public class Questao extends QuestaoConector
 			}
 		});
 
-		// método para trabalhar com o botão Random
-		// Tudo que esse método faz é randomizar, apenas isso...
-		// Após clicar em Randomizar, é necessário clicar em Sortear para que
-		// esse método faça sentido... Caso contrário, se o usuário ficar sempre
-		// clicando no
-		// botão Randomizar, o array na posição w[0] sempre será atualizado, e
-		// não será reaproveitado as
-		// outras posições
-		btnRandom.setOnClickListener(new View.OnClickListener() {
+		// Botão para carregar as questões erradas
+		btnQuestoesErradas.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				z = f = 0;
+				//z = f = 0;
 				// QuestaoAux.embaralhar(w);
 				// carregarQuestao(w[f]);
+				//mudarACorDosLayouts();
+				try {
+					if(questoesErradas.size()>++indexQuestoesErradas){						
+						resp = carregarQuestao(questoesErradas.get(indexQuestoesErradas));						
+					}else{
+						indexQuestoesErradas = 0;
+						resp = carregarQuestao(questoesErradas.get(indexQuestoesErradas));
+					}
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				mudarACorDosLayouts();
 			}
 		});
@@ -280,7 +326,13 @@ public class Questao extends QuestaoConector
 				// TODO Auto-generated method stub
 				if (auxiliarTema < questoesTematicas.size()) {
 					try {
-						carregarQuestao(questoesTematicas.get(auxiliarTema++));
+						//carregarQuestao(questoesTematicas.get(auxiliarTema++));
+						if(questoesTematicas.size()>++auxiliarTema){						
+							resp = carregarQuestao(questoesTematicas.get(auxiliarTema));						
+						}else{
+							auxiliarTema = 0;
+							resp = carregarQuestao(questoesTematicas.get(auxiliarTema));
+						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -326,8 +378,8 @@ public class Questao extends QuestaoConector
 		// }
 
 		// INSTRUÇÃO PARA CARREGAR O SPINNER
-		
-		carregarTemas();
+		if (ar != null) {
+			carregarTemas();
 		
 		//temas = new ArrayList<String>();
 		//conectorAuxiliar = new ArrayList<Integer>();
@@ -376,19 +428,19 @@ public class Questao extends QuestaoConector
 		// https://www.tutorialspoint.com/android/android_spinner_control.htm
 		// Alterei apenas a variável categorias por temas
 		// Spinner click listener
-		btnSpinner.setOnItemSelectedListener((OnItemSelectedListener) this);
+			btnSpinner.setOnItemSelectedListener((OnItemSelectedListener) this);
 
 		// Creating adapter for spinner
-		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line,
+			ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line,
 				temas);
 
 		// Drop down layout style - list view with radio button
-		dataAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+			dataAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
 
 		// attaching data adapter to spinner
-		btnSpinner.setAdapter(dataAdapter);
-		btnSpinner.setSelection(temas.size() - 1);
-
+			btnSpinner.setAdapter(dataAdapter);
+			btnSpinner.setSelection(temas.size() - 1);
+		}
 		/////////////////////// FIM DO CÓDIGO PARA TRABALHAR COM O
 		/////////////////////// SPINNER/////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// PEQUENO LAÇO PARA CARREGAR A PRIMEIRA QUESTÃO
@@ -442,7 +494,11 @@ public class Questao extends QuestaoConector
 			}
 		} else {
 			try {
-				resp = carregarQuestao(0);
+				if (z != -1) {
+					resp = carregarQuestao(z);
+				} else {
+					resp = carregarQuestao(0);
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -506,9 +562,12 @@ public class Questao extends QuestaoConector
 														// range das questões
 				numbers.add(i);
 			}
-			Collections.shuffle(numbers); // função para embaralhar
-
-			tv.setText(ar.get(q)); // * a variável tv carrega o enunciado na
+			Collections.shuffle(numbers); // função para embaralhar			
+			String t = ar.get(q);
+			char a = '\n';
+			t = t.replace("\\n", ""+a);			
+			tv.setText(t);
+			//tv.setText(ar.get(q)); // * a variável tv carrega o enunciado na
 									// tela
 			String[] abcde = { "a) ", "b) ", "c) ", "d) ", "e) " }; // serve
 																	// para
@@ -544,10 +603,21 @@ public class Questao extends QuestaoConector
 														// tela
 
 			auxiliarEmbaralharAlternativas = numbers;
+			
+			setVisibleImage(ar.get(q));
 
 			return resposta;
 		} catch (Exception ex) {
-			return carregarQuestao(0);
+			//return carregarQuestao(0);
+			if (ar.isEmpty()) {
+				Toast.makeText(Questao.this, "Selecione um arquivo para começar", Toast.LENGTH_SHORT).show();
+				return 0;
+			} else {
+				System.out.println(ex);
+				carregarDialogQuestoesErradas();
+				return carregarQuestao(0);
+				//return 0;
+			}
 		}
 
 	}
@@ -560,6 +630,7 @@ public class Questao extends QuestaoConector
 		SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putInt("z", z);
+		editor.putString("path", pathFile);
 		// for(int i=0;i<h;i++){
 		// String cat="aux"+i;
 		// editor.putInt(cat, w[i]);
@@ -577,22 +648,29 @@ public class Questao extends QuestaoConector
 		int value = sharedPref.getInt("z", defaultValue);
 		return value;
 	}
+	
+	public String restaurarEstado2() {
+		SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+		String defaultValue = "";
+		String value = sharedPref.getString("path", defaultValue);
+		return value;
+	}
 
 	/*
 	 * Serve para restaurar o array guardado pelo método guardarEstado() O array
 	 * que ele restaura é o utilizado para fazer o random
 	 */
-	public int[] restaurarW() {
+	//public int[] restaurarW() {
 		// int[] aux=new int[h];
-		int[] aux = null;
+		//int[] aux = null;
 		// SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
 		// for(int i=0;i<h;i++){
 		// int defaultValue = i;
 		// aux[i]=sharedPref.getInt("aux"+i, defaultValue);
 		// }
 		// return aux;
-		return aux;
-	}
+		//return aux;
+	//}
 
 	@Override
 	public void onDestroy() {
@@ -671,38 +749,43 @@ public class Questao extends QuestaoConector
 		// Toast.makeText(this, "You Swiped Down!", Toast.LENGTH_LONG).show();
 		// return false;
 		// }
-
-		if (motionEvent1.getX() - motionEvent2.getX() > 50) {
-			// Toast.makeText(this, "You Swiped Left!",
-			// Toast.LENGTH_LONG).show();
-			int aux = h - 1;
-			if (z < aux) {
-				try {
-					resp = carregarQuestao(++z);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		if(motionEvent1 == null){
+			return false;
+		}else{
+			if (motionEvent1.getX() - motionEvent2.getX() > 50) {
+				// Toast.makeText(this, "You Swiped Left!",
+				// Toast.LENGTH_LONG).show();
+				int aux = h - 1;
+				if (z < aux) {
+					try {
+						resp = carregarQuestao(++z);
+						if(verificarFimDeTema(ar,z,questoesErradas))
+							carregarDialogQuestoesErradas();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				mudarACorDosLayouts();
+				return true;
 			}
-			mudarACorDosLayouts();
-			return true;
-		}
 
-		if (motionEvent2.getX() - motionEvent1.getX() > 50) {
-			// Toast.makeText(this, "You Swiped Right!",
-			// Toast.LENGTH_LONG).show();
-			if (z > 0) {
-				try {
-					resp = carregarQuestao(--z);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			if (motionEvent2.getX() - motionEvent1.getX() > 50) {
+				// Toast.makeText(this, "You Swiped Right!",
+				// Toast.LENGTH_LONG).show();
+				if (z > 0) {
+					try {
+						resp = carregarQuestao(--z);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				mudarACorDosLayouts();
+				return true;
+			} else {
+				return true;
 			}
-			mudarACorDosLayouts();
-			return true;
-		} else {
-			return true;
 		}
 	}
 
@@ -716,7 +799,7 @@ public class Questao extends QuestaoConector
 	public boolean onDoubleTap(MotionEvent e) {
 		// TODO Auto-generated method stub
 		if (z != -1) {
-			QuestaoAux.checked(resp, rd, Questao.this, auxiliarEmbaralharAlternativas);
+			salvarOuRemoverResposta(QuestaoAux.checked(resp, rd, Questao.this, auxiliarEmbaralharAlternativas));
 		}
 		return true;
 	}
@@ -733,7 +816,9 @@ public class Questao extends QuestaoConector
 		switch (requestCode) {
 		case 1:
 			if (resultCode == RESULT_OK) {
+				zerarVariaveisGlobais();
 				String FilePath = data.getData().getPath();
+				pathFile = FilePath;
 				try {
 					InputStream is = new FileInputStream(FilePath);
 					try {
@@ -759,7 +844,31 @@ public class Questao extends QuestaoConector
 			break;
 
 		}
-
+	}
+	
+	// esse método serve para carregar o arquivo
+		// após uma parada
+	public void carregarNovamente() {
+		Novas_Funcionalidades fo = new Novas_Funcionalidades();
+		String FilePath = restaurarEstado2();
+		pathFile = FilePath;
+		if (!FilePath.equals("")) {
+			try {
+				InputStream is = new FileInputStream(FilePath);
+				try {
+					ar = fo.realizarLeituraDaQuestao(is); // RECEBE O ARRAYLIST
+															// DA FUNÇÃO
+					carregarTemas();
+					//resp = carregarQuestao(z); // CARREGA QUESTÃO NA TELA
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public void carregarTemas(){
@@ -778,6 +887,22 @@ public class Questao extends QuestaoConector
 			conectorAuxiliar = t.getRefNumber();
 		}
 		temas.add("TODOS OS TEMAS");
+		carregarNoSpinner();
+	}
+	
+	public void carregarNoSpinner() {
+		btnSpinner.setOnItemSelectedListener((OnItemSelectedListener) this);
+
+		// Creating adapter for spinner
+		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line,
+				temas);
+
+		// Drop down layout style - list view with radio button
+		dataAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+
+		// attaching data adapter to spinner
+		btnSpinner.setAdapter(dataAdapter);
+		btnSpinner.setSelection(temas.size() - 1);
 	}
 	
 	public Temas carregarTemas2(ArrayList<String> as){
@@ -803,7 +928,226 @@ public class Questao extends QuestaoConector
 				btnSpinner.setSelection(temas.size() - 1);
 	}
 	
+	void salvarQuestaoErrada(List<Integer> questoesErradas, int index){
+		if(questoesErradas.indexOf(index)==-1){
+			questoesErradas.add(index);
+		}
+	}
+	
+	public String criarPastaAndMakeVisibleImage(String enunciado){
+		Novas_Funcionalidades nf = new Novas_Funcionalidades();
+		String imagem = nf.filtrarImagem(enunciado);
+		getPublicAlbumStorageDir("QuestionationPictures");
+		if(imagem.equals("")){
+			imageView.setVisibility(ImageView.GONE);
+			return "";
+		}else{
+			imageView.setVisibility(ImageView.VISIBLE);
+			return imagem;
+		}
+	}
+	
+public void setVisibleImage(String enunciado){
+		
+		String imagem=criarPastaAndMakeVisibleImage(enunciado);
+		if(!imagem.equals("")){
 
+		// funciona!!!! imageView.setImageResource(R.drawable.blue96x96);	 
+		
+		//getPublicAlbumStorageDir("QuestionationPictures");
+		//getPublicAlbumStorageDir("test1");
+		
+		Uri uri = null;		
+		File f = getPublicFileStorageDir(imagem);
+		if(f.exists()){
+		//f = Context.
+		uri = Uri.fromFile(f);
+		final Uri uri2 = uri;
+		imageView.setAdjustViewBounds(true);
+		//imageView.setLongClickable(true);
+		imageView.setOnLongClickListener(new View.OnLongClickListener() {
+			
+			@Override
+			public boolean onLongClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(Intent.ACTION_EDIT);//.ACTION_VIEW);				
+				intent.setData(uri2);							
+				//intent.setType("image/png");
+				intent.setDataAndType(uri2, "image/png");
+				
+				startActivityForResult(intent, 1);
+				return false;
+			}
+		});
+		imageView.setImageURI(uri);
+		}
+		}
+	}
+
+	public File getPublicAlbumStorageDir(String albumName) {
+		// Get the directory for the user's public pictures directory.
+		File file = new File(Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_PICTURES), albumName);
+    
+		if(!file.exists()){
+			if (!file.mkdirs()) {
+				Log.e("bla", "Directory not created");
+			}
+		}
+		return file;
+	}
+	
+	public File getPublicFileStorageDir(String picture){
+		File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+				"QuestionationPictures/"+picture);
+		return file;
+	}
+	
+	public int getVariavelZ(){
+		return this.z;
+	}
+	
+	boolean verificarFimDeTema(ArrayList<String> ar, int index, List<Integer> questoesErradas){	
+		//verifica se há mais de uma questão respondida
+		if(index>=1){
+			index*=6;
+			//verifica se há respostas erradas
+			if(!questoesErradas.isEmpty()){		
+				//capturando a questão anterior
+				String temaAnterior = ar.get(index-6);
+				//capturando a questão atual
+				String temaAtual = ar.get(index);
+				//filtrando o tema da questao anterior
+				temaAnterior = (String) temaAnterior.subSequence(temaAnterior.indexOf("[")+1, temaAnterior.indexOf("]"));
+				//filtrando o tema da questao atual
+				temaAtual = (String) temaAtual.subSequence(temaAtual.indexOf("[")+1, temaAtual.indexOf("]"));
+				//verifica se os temas são diferentes
+				if(!temaAnterior.equals(temaAtual)){
+					return true;
+				}else{
+					return false;
+				}
+			}else
+				return false;
+		}else{
+			return false;
+		}
+	}
+	
+	void carregarDialogQuestoesErradas(){
+		//criar o dialog
+		AlertDialog.Builder builder = new AlertDialog.Builder(Questao.this);
+		//definir a mensagem
+		builder.setMessage("Você deseja carregar as questões erradas?")
+		//definir o titulo
+		.setTitle("Carregar Questões Anteriores");
+		//método para resposta positiva
+		builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				//habilita o botao
+				btnQuestoesErradas.setEnabled(true);
+				try {
+					//armazena a posição atual do z numa variável temporária
+					zTemp = z;
+					//carrega a primeira questao errada
+					resp = carregarQuestao(questoesErradas.get(indexQuestoesErradas));
+					zQuestaoErradas = true;
+					
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//zTemp = z;
+				//arTemp = new ArrayList<String>();
+				//arTemp = ar;
+			}
+		});
+		builder.setNegativeButton("Não", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				zQuestaoErradas = false;
+			}
+		});
+		AlertDialog dialog = builder.create();
+		dialog.show();
+	}
+	
+	void carregarDialogAcabouQuestoesErradas(){
+		//criar o dialog
+		AlertDialog.Builder builder = new AlertDialog.Builder(Questao.this);
+		//definir a mensagem
+		builder.setMessage("Você deseja continuar de onde parou?")
+		//definir o titulo
+		.setTitle("Acabou questões erradas");
+		//método para resposta positiva
+		builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+					
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				//habilita o botao
+				//btnQuestoesErradas.setEnabled(true);
+				try {
+					//armazena a posição atual do z numa variável temporária
+					z=zTemp;
+					//carrega a primeira questao errada
+					resp = carregarQuestao(z);												
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//zTemp = z;
+				//arTemp = new ArrayList<String>();
+				//arTemp = ar;
+			}
+		});
+		builder.setNegativeButton("Não", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+			}
+		});
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		zQuestaoErradas = false;
+	}
+	
+	void zerarVariaveisGlobais(){
+		z=-1;
+		auxiliarTema = 0;
+		resp = -1;
+		indexQuestoesErradas=0;
+		zQuestaoErradas = false;
+	}
+	
+	public void salvarOuRemoverResposta(boolean gab){
+		if(!gab){
+			salvarQuestaoErrada(questoesErradas, z);				
+		}else{
+			if(!questoesErradas.isEmpty())
+				if(questoesErradas.indexOf(questoesErradas.get(indexQuestoesErradas))!=-1){
+					questoesErradas.remove(indexQuestoesErradas);
+				}			
+		}
+		if(questoesErradas.isEmpty()){				
+			btnQuestoesErradas.setEnabled(false);
+			if(zQuestaoErradas){
+				carregarDialogAcabouQuestoesErradas();
+			}
+		}
+	}
 }
 
 ///////////////////////////////////////// FIM DA CLASSE

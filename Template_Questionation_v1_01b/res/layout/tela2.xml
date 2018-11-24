@@ -18,19 +18,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
             android:layout_alignParentTop="false"
             android:layout_below="@+id/editText1"
             android:gravity="center"
             android:minHeight="45dp"
             android:minWidth="300dp"
             android:text="" />
+        
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/textView1"
+            android:contentDescription="imagem"
+            android:src="@drawable/ic_launcher"
+            android:visibility="visible" />
 
         <RadioGroup
             android:id="@+id/radioGroup1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_below="@+id/textView1" >
+            android:layout_below="@+id/imageView1" >
 
             <RadioButton
                 android:id="@+id/radio0"
@@ -138,7 +150,8 @@
                 android:id="@+id/btnRandomizar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Randomizar" />
+                android:enabled="false"
+                android:text="Questões Erradas" />
 
             <Button
                 android:id="@+id/btnProximo"

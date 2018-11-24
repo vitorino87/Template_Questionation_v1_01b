@@ -34,7 +34,7 @@ public class Novas_Funcionalidades extends Questao {
 					}
 					ar.add(text);
 					text = "";
-					isr.skip(1);
+					//isr.skip(1);
 				}
 			}
 			file.close();
@@ -138,4 +138,13 @@ public class Novas_Funcionalidades extends Questao {
 												//Assim, cada elemento desta lista terá um valor relacionado ao tema correspondente.
 												//Num contexto geral, essa variável faz a ligação entre o tema e a questão do tema
 	}
+	
+	public String filtrarImagem(String enunciado){
+		try{
+			String imagem = (String) enunciado.subSequence(enunciado.indexOf("{")+1, enunciado.indexOf("}"));
+			return imagem;
+		}catch(Exception ex){
+			return "";
+		}
+	}	
 }
