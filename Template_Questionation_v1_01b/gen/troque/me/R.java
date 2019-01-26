@@ -26,31 +26,34 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int btnAnterior=0x7f080011;
-        public static final int btnBuscar=0x7f08000b;
-        public static final int btnChecar=0x7f08000e;
-        public static final int btnProximo=0x7f080013;
-        public static final int btnRandomizar=0x7f080012;
-        public static final int btnSortear=0x7f08000d;
-        public static final int btnTema=0x7f08000f;
-        public static final int editText1=0x7f080003;
-        public static final int escolhedor=0x7f080015;
-        public static final int imageView1=0x7f080004;
-        public static final int linearLayout1=0x7f08000c;
-        public static final int linearLayout2=0x7f080010;
-        public static final int linearlayout3=0x7f080014;
-        public static final int radio0=0x7f080006;
-        public static final int radio1=0x7f080007;
-        public static final int radio2=0x7f080008;
-        public static final int radio3=0x7f080009;
-        public static final int radio4=0x7f08000a;
-        public static final int radioGroup1=0x7f080005;
-        public static final int relativeLayout=0x7f080001;
-        public static final int scrollView=0x7f080000;
-        public static final int textView1=0x7f080002;
+        public static final int btnAnterior=0x7f080012;
+        public static final int btnBuscar=0x7f08000c;
+        public static final int btnChecar=0x7f08000f;
+        public static final int btnProximo=0x7f080014;
+        public static final int btnRandomizar=0x7f080013;
+        public static final int btnSortear=0x7f08000e;
+        public static final int btnTema=0x7f080010;
+        public static final int chronometer1=0x7f080017;
+        public static final int editText1=0x7f080004;
+        public static final int editTextBuscar=0x7f080001;
+        public static final int escolhedor=0x7f080016;
+        public static final int imageView1=0x7f080005;
+        public static final int linearLayout1=0x7f08000d;
+        public static final int linearLayout2=0x7f080011;
+        public static final int linearlayout3=0x7f080015;
+        public static final int radio0=0x7f080007;
+        public static final int radio1=0x7f080008;
+        public static final int radio2=0x7f080009;
+        public static final int radio3=0x7f08000a;
+        public static final int radio4=0x7f08000b;
+        public static final int radioGroup1=0x7f080006;
+        public static final int relativeLayout=0x7f080003;
+        public static final int scrollView=0x7f080002;
+        public static final int textView1=0x7f080000;
     }
     public static final class layout {
-        public static final int tela2=0x7f030000;
+        public static final int buscarquest=0x7f030000;
+        public static final int tela2=0x7f030001;
     }
     public static final class raw {
         public static final int teste=0x7f040000;

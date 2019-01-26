@@ -29,9 +29,9 @@ public class Novas_Funcionalidades extends Questao {
 				if (ch != 10 && ch != 13) {
 					text += String.valueOf((char) ch);
 				} else {
-					if (text.equals("")) {
-						text = " ";
-					}
+					//if (text.equals("")) {
+					//	text = " ";
+					//}
 					ar.add(text);
 					text = "";
 					//isr.skip(1);

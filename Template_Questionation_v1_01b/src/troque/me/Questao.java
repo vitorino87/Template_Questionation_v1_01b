@@ -9,17 +9,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.LayoutInflater;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
@@ -30,6 +34,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -64,9 +69,10 @@ public class Questao extends QuestaoConector
 	TextView tv;
 	RadioButton[] rd = new RadioButton[5];
 	Button btnQuestoesErradas, btnChecar, btnBuscar, btnAnterior, btnProximo, btnSortear, btnTema;
-	EditText txtBuscar;
+	EditText txtBuscar, txtBuscar2;
 	Spinner btnSpinner;
 	ImageView imageView;
+	Chronometer chrono;
 
 	// variáveis para impedir que o random repita números
 	//private int f = 0;
@@ -121,7 +127,7 @@ public class Questao extends QuestaoConector
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		z = restaurarEstado();
+		z = restaurarEstado(); //carrega o valor de z que estava no SharedPreferences		
 		// w = restaurarW();
 		setContentView(R.layout.tela2);
 		tv = (TextView) findViewById(R.id.textView1); // ligando os objetos das
@@ -137,14 +143,15 @@ public class Questao extends QuestaoConector
 		btnAnterior = (Button) findViewById(R.id.btnAnterior);
 		btnProximo = (Button) findViewById(R.id.btnProximo);
 		btnSortear = (Button) findViewById(R.id.btnSortear);
-		txtBuscar = (EditText) findViewById(R.id.editText1);
+		txtBuscar = (EditText) findViewById(R.id.editText1);		
 		btnSpinner = (Spinner) findViewById(R.id.escolhedor);
 		btnTema = (Button) findViewById(R.id.btnTema);
 		questoesTematicas = new ArrayList<Integer>();
 		sv = (ScrollView) findViewById(R.id.scrollView);
 		imageView = (ImageView) findViewById(R.id.imageView1);
 		questoesErradas = new ArrayList<Integer>();
-
+		chrono = (Chronometer) findViewById(R.id.chronometer1);
+		
 		// chamando o método que muda as cores
 		mudarACorDosLayouts();
 
@@ -186,6 +193,15 @@ public class Questao extends QuestaoConector
 				// TODO Auto-generated method stub
 				gestureDetector.onTouchEvent(event);
 				return false;
+			}
+		});
+		
+		txtBuscar.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub				
+				onCreateDialog().show();
 			}
 		});
 		
@@ -453,6 +469,8 @@ public class Questao extends QuestaoConector
 			//}
 			//f = z;
 		//}
+		carregarNovamente(); //carrega o caminho path do arquivo que está no SharedPreferences
+		carregarNovamenteQuestoesErradas(); //carrega as questoes erradas que estão no SharedPreferences
 	}
 
 	///////////////////////////////////////// FIM DO MÉTODO PRINCIPAL
@@ -604,6 +622,11 @@ public class Questao extends QuestaoConector
 
 			auxiliarEmbaralharAlternativas = numbers;
 			
+			chrono.stop();			
+			chrono.setBase(SystemClock.elapsedRealtime());			
+			//chrono.clearAnimation();//.setText("00:00");
+			chrono.start();
+			
 			setVisibleImage(ar.get(q));
 
 			return resposta;
@@ -631,6 +654,15 @@ public class Questao extends QuestaoConector
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putInt("z", z);
 		editor.putString("path", pathFile);
+		int i = 0;
+		editor.putInt("qtdeQuestoesErradas", questoesErradas.size());
+		if(questoesErradas.size()>0){
+			for(Iterator<Integer> iterator = questoesErradas.iterator();iterator.hasNext();){			 
+				String cat= "aux"+i;			
+				editor.putInt(cat, iterator.next());
+				i++;
+			}
+		}
 		// for(int i=0;i<h;i++){
 		// String cat="aux"+i;
 		// editor.putInt(cat, w[i]);
@@ -653,6 +685,33 @@ public class Questao extends QuestaoConector
 		SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
 		String defaultValue = "";
 		String value = sharedPref.getString("path", defaultValue);
+		return value;
+	}
+	
+	/*
+	 * Esse método carrega novamente as questoes erradas
+	 */
+	public void carregarNovamenteQuestoesErradas(){
+		int qtdeQuestoesErradas = restaurarQtdeQuestoesErradas();
+		if(qtdeQuestoesErradas>0){
+			for(int i=0;i<qtdeQuestoesErradas;i++){
+				String key = "aux"+i;
+				questoesErradas.add(restaurarQuestoesErradas(key));
+			}			
+		}		
+	}
+	
+	public int restaurarQtdeQuestoesErradas(){
+		SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+		int defaultValue = -1;
+		int value = sharedPref.getInt("qtdeQuestoesErradas", defaultValue);
+		return value;
+	}
+	
+	public int restaurarQuestoesErradas(String key){
+		SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+		int defaultValue = -1;
+		int value = sharedPref.getInt(key, defaultValue);
 		return value;
 	}
 
@@ -888,6 +947,7 @@ public class Questao extends QuestaoConector
 		}
 		temas.add("TODOS OS TEMAS");
 		carregarNoSpinner();
+		//alimentarSpinner();
 	}
 	
 	public void carregarNoSpinner() {
@@ -1009,6 +1069,7 @@ public void setVisibleImage(String enunciado){
 	
 	boolean verificarFimDeTema(ArrayList<String> ar, int index, List<Integer> questoesErradas){	
 		//verifica se há mais de uma questão respondida
+		boolean retorno = false;
 		if(index>=1){
 			index*=6;
 			//verifica se há respostas erradas
@@ -1023,61 +1084,60 @@ public void setVisibleImage(String enunciado){
 				temaAtual = (String) temaAtual.subSequence(temaAtual.indexOf("[")+1, temaAtual.indexOf("]"));
 				//verifica se os temas são diferentes
 				if(!temaAnterior.equals(temaAtual)){
-					return true;
-				}else{
-					return false;
+					retorno = true;
 				}
-			}else
-				return false;
-		}else{
-			return false;
+			}
 		}
+		return retorno;
+		
 	}
 	
 	void carregarDialogQuestoesErradas(){
-		//criar o dialog
-		AlertDialog.Builder builder = new AlertDialog.Builder(Questao.this);
-		//definir a mensagem
-		builder.setMessage("Você deseja carregar as questões erradas?")
-		//definir o titulo
-		.setTitle("Carregar Questões Anteriores");
-		//método para resposta positiva
-		builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				//habilita o botao
-				btnQuestoesErradas.setEnabled(true);
-				try {
-					//armazena a posição atual do z numa variável temporária
-					zTemp = z;
-					//carrega a primeira questao errada
-					resp = carregarQuestao(questoesErradas.get(indexQuestoesErradas));
-					zQuestaoErradas = true;
-					
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		if(!questoesErradas.isEmpty()){
+			//criar o dialog
+			AlertDialog.Builder builder = new AlertDialog.Builder(Questao.this);
+			//definir a mensagem
+			builder.setMessage("Você deseja carregar as questões erradas?")
+			//definir o titulo
+			.setTitle("Carregar Questões Anteriores");
+			//método para resposta positiva
+			builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					//habilita o botao
+					btnQuestoesErradas.setEnabled(true);
+					try {
+						//armazena a posição atual do z numa variável temporária
+						zTemp = z;
+						//carrega a primeira questao errada
+						resp = carregarQuestao(questoesErradas.get(indexQuestoesErradas));
+						zQuestaoErradas = true;
+						
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					//zTemp = z;
+					//arTemp = new ArrayList<String>();
+					//arTemp = ar;
 				}
-				//zTemp = z;
-				//arTemp = new ArrayList<String>();
-				//arTemp = ar;
-			}
-		});
-		builder.setNegativeButton("Não", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				zQuestaoErradas = false;
-			}
-		});
-		AlertDialog dialog = builder.create();
-		dialog.show();
+			});
+			builder.setNegativeButton("Não", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					zQuestaoErradas = false;
+				}
+			});
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		}		
 	}
 	
 	void carregarDialogAcabouQuestoesErradas(){
@@ -1127,6 +1187,7 @@ public void setVisibleImage(String enunciado){
 	void zerarVariaveisGlobais(){
 		z=-1;
 		auxiliarTema = 0;
+		questoesErradas.clear();
 		resp = -1;
 		indexQuestoesErradas=0;
 		zQuestaoErradas = false;
@@ -1147,6 +1208,32 @@ public void setVisibleImage(String enunciado){
 				carregarDialogAcabouQuestoesErradas();
 			}
 		}
+	}
+	
+	public Dialog onCreateDialog() {
+		AlertDialog.Builder alert = new AlertDialog.Builder(Questao.this);
+		// Get the layout inflater
+	    LayoutInflater inflater = Questao.this.getLayoutInflater();	  
+	    final View layout = inflater.inflate(R.layout.buscarquest, null);
+		alert.setView(layout)
+		.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+               @Override
+               public void onClick(DialogInterface dialog, int id) {            	                     
+            	   try {         
+            		   txtBuscar2 = (EditText) layout.findViewById(R.id.editTextBuscar);
+            		   resp = carregarQuestao(Integer.parseInt(txtBuscar2.getText().toString()));
+				} catch (NumberFormatException | IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+               }
+           })
+           .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+               public void onClick(DialogInterface dialog, int id) {
+                   //LoginDialogFragment.this.getDialog().cancel();
+               }
+           });
+		return alert.create();
 	}
 }
 

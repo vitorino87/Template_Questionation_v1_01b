@@ -1,0 +1,4 @@
+Last Update 26-01-2019:
+- added cronometro
+- added SharedPreferences para questoesErradas
+- a busca foi modificada para um AlertDialog.Build personalizado
