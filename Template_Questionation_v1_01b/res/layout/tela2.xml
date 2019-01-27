@@ -22,9 +22,8 @@
             android:gravity="center"
             android:minHeight="45dp"
             android:minWidth="300dp"
-            android:text=""                         
-            
-            />
+            android:text=""
+            android:textSize="20sp" />
         
         <ImageView
             android:id="@+id/imageView1"
