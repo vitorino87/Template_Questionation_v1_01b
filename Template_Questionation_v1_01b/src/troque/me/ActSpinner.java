@@ -13,7 +13,7 @@ import android.widget.Spinner;
 public class ActSpinner {
 
 	public void carregarNoSpinner(Spinner btnSpinner, Activity ac, List<String> temas) {						
-		btnSpinner.setOnItemSelectedListener((OnItemSelectedListener) ac);
+		//btnSpinner.setOnItemSelectedListener((OnItemSelectedListener) ac);
 		
 		btnSpinner.setOnItemSelectedListener(te);
 
